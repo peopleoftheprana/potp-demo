@@ -1232,7 +1232,7 @@ body { margin: 0; background: #F6F1E6; }
     e.preventDefault();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.value.trim())) { msg.textContent = "Veuillez inscrire votre adresse courriel."; email.focus(); return; }
     var body = { form: f.getAttribute("data-form"), first_name: name.value.trim(), email: email.value.trim(), language: "fr", page: location.href.split("#")[0], consent: "yes", hp: f.elements.website ? f.elements.website.value : "", t: T0 };
-    if (!/^https?:$/.test(location.protocol)) { f.reset(); msg.textContent = "Merci. Votre inscription est faite. (Dans cet aperçu, rien n’a été envoyé.)"; return; }
+    if (!/^https?:$/.test(location.protocol) || /\.github\.io$/.test(location.hostname)) { f.reset(); msg.textContent = "Merci. Votre inscription est faite. (Dans cet aperçu, rien n’a été envoyé.)"; return; }
     msg.textContent = "Un instant.";
     fetch(f.getAttribute("data-endpoint"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), credentials: "omit" })
       .then(function (r) { return r.json(); }).then(function (j) { if (!j || !j.ok) throw new Error((j && j.error) || "error"); f.reset(); msg.textContent = "Merci. Votre inscription est faite."; })
