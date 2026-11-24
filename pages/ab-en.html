@@ -5,6 +5,9 @@
 <!--
   PEOPLE OF THE PRANA: About page (peopleoftheprana.com/about/)
   ------------------------------------------------------------------
+  Version 9 (V9), November 24, 2026: connected straight to BreatheCRM.
+  - The footer sign-up posts straight to BreatheCRM (form "Website newsletter (footer, every page)", f_mwulv28cdnb7bo, tag newsletter) instead of the plugin.
+
   Version 7 (V7), November 17, 2026: Esther's edits of November 16 (one doc per page), on top of the November 12 file.
   - The first screen: Esther and Ma'amo, cut out, beside "Teach one billion people how to breathe." The symbol stays in the header and footer.
   - Who are the People of the Prana: the new photos, and Ma'amo's card in the first person.
@@ -1030,14 +1033,15 @@ body { margin: 0; background: #054C59; }
         </div>
         <figcaption class="sig-k" aria-hidden="true"><span><b>22</b>often linked with anxiety</span><span><b>16</b>the average adult</span><span><b>6</b>Calm Breath, on the beat</span></figcaption>
       </figure>
-      <!-- V7: the newsletter sign-up, in every footer. It posts to the POTP App Records plugin (1.2), which keeps each subscriber with
-           the time they signed up, the page and the language. CASL: the business name and mailing address sit beside the form. -->
+      <!-- V9: the newsletter sign-up, in every footer. It posts straight to BreatheCRM's form intake (form "Website newsletter (footer,
+           every page)", tag newsletter), which records the consent wording, the time, the page and the language.
+           CASL: the business name and mailing address sit beside the form. -->
       <section class="fsub" aria-labelledby="fsub-h">
         <div class="fsub-copy">
           <h2 class="fsub-h" id="fsub-h">A little calm in your inbox.</h2>
           <p>Sign up here to receive emails from the People of the Prana. You can unsubscribe at any time.</p>
         </div>
-        <form class="fsub-form" id="fsub-form" data-endpoint="/wp-json/potp/v1/subscribe" novalidate>
+        <form class="fsub-form" id="fsub-form" data-endpoint="https://slmjdqejtzlwaeupxvbf.supabase.co/functions/v1/crm-intake" data-form="f_mwulv28cdnb7bo" novalidate>
           <label>First name<input name="first_name" type="text" autocomplete="given-name"></label>
           <label>Email<input name="email" type="email" autocomplete="email" inputmode="email" required></label>
           <label class="fsub-hp" aria-hidden="true">Website<input name="website" type="text" tabindex="-1" autocomplete="off"></label>
@@ -1075,19 +1079,20 @@ body { margin: 0; background: #054C59; }
     </div>
   </footer>
 <script>
-/* V7: the footer sign-up. Sends the first name, email, language and page to the plugin's address (data-endpoint).
+/* V9: the footer sign-up. Sends the first name, email, language and page straight to BreatheCRM (data-endpoint, form data-form).
    Opened from a file or inside the demo, nothing is sent. */
 (function () {
   var f = document.getElementById("fsub-form"); if (!f) return;
+  var T0 = Date.now();   /* BreatheCRM sets aside a form sent within 2 seconds of the page opening (robots) */
   var msg = f.querySelector(".fsub-msg"), name = f.elements.first_name, email = f.elements.email;
   f.addEventListener("submit", function (e) {
     e.preventDefault();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.value.trim())) { msg.textContent = "Please enter your email address."; email.focus(); return; }
-    var body = { first_name: name.value.trim(), email: email.value.trim(), language: "en", page: location.pathname, consent: true, at: new Date().toISOString(), website: f.elements.website ? f.elements.website.value : "" };
+    var body = { form: f.getAttribute("data-form"), first_name: name.value.trim(), email: email.value.trim(), language: "en", page: location.href.split("#")[0], consent: "yes", hp: f.elements.website ? f.elements.website.value : "", t: T0 };
     if (!/^https?:$/.test(location.protocol)) { f.reset(); msg.textContent = "Thank you. You’re signed up. (In this preview, nothing was sent.)"; return; }
     msg.textContent = "One moment.";
     fetch(f.getAttribute("data-endpoint"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), credentials: "omit" })
-      .then(function (r) { if (!r.ok) throw new Error(String(r.status)); f.reset(); msg.textContent = "Thank you. You’re signed up."; })
+      .then(function (r) { return r.json(); }).then(function (j) { if (!j || !j.ok) throw new Error((j && j.error) || "error"); f.reset(); msg.textContent = "Thank you. You’re signed up."; })
       .catch(function () { msg.textContent = "That didn’t go through. Please try again, or write to breathe@peopleoftheprana.com."; });
   });
 })();

@@ -8,6 +8,9 @@
 <!--
   PEOPLE OF THE PRANA: Wake Up & Breathe page (peopleoftheprana.com/wake-up-and-breathe/)
   ------------------------------------------------------------------
+  Version 9 (V9), November 24, 2026: connected straight to BreatheCRM.
+  - The footer sign-up posts straight to BreatheCRM (form "Website newsletter (footer, every page)", f_mwulv28cdnb7bo, tag newsletter) instead of the plugin.
+
   Version 7 (V7), November 17, 2026: Esther's edits of November 16 (one doc per page), on top of the November 12 file.
   - The new lead (the buyer's problem, the group as the answer, then the timetable). The story heading in the buyer's words.
   - The numbers strip: "10 faces on a typical morning, from about 30 members". The community answer says how many breathe together.
@@ -1170,14 +1173,15 @@ body { margin: 0; background: #F6F1E6; }
     <div class="wrap">
       <!-- The path (November 11): the seven pages as one story. The line is drawn as far as this page. -->
       <nav class="path" aria-label="Les pages, dans l’ordre" style="--at: 4"><ol><li class="done"><a href="https://peopleoftheprana.com/fr/"><i aria-hidden="true"></i><span>Accueil</span></a></li><li class="done"><a href="https://peopleoftheprana.com/fr/beat-breath/"><i aria-hidden="true"></i><span>BEAT&nbsp;+&nbsp;BREATH&trade;</span></a></li><li class="done"><a href="https://peopleoftheprana.com/fr/begin-with-breath/"><i aria-hidden="true"></i><span>Begin with Breath</span></a></li><li class="done"><a href="https://peopleoftheprana.com/fr/nervous-system-first-aid-kit/"><i aria-hidden="true"></i><span>Nervous System First Aid Kit</span></a></li><li class="here"><a href="https://peopleoftheprana.com/fr/wake-up-and-breathe/" aria-current="page"><i aria-hidden="true"></i><span>Wake Up &amp; Breathe</span></a></li><li><a href="https://peopleoftheprana.com/fr/a-propos/"><i aria-hidden="true"></i><span>À propos</span></a></li><li><a href="https://peopleoftheprana.com/fr/organisations/"><i aria-hidden="true"></i><span>Pour les organisations</span></a></li></ol></nav>
-      <!-- V7: the newsletter sign-up, in every footer. It posts to the POTP App Records plugin (1.2), which keeps each subscriber with
-           the time they signed up, the page and the language. CASL: the business name and mailing address sit beside the form. -->
+      <!-- V9: the newsletter sign-up, in every footer. It posts straight to BreatheCRM's form intake (form "Website newsletter (footer,
+           every page)", tag newsletter), which records the consent wording, the time, the page and the language.
+           CASL: the business name and mailing address sit beside the form. -->
       <section class="fsub" aria-labelledby="fsub-h">
         <div class="fsub-copy">
           <h2 class="fsub-h" id="fsub-h">Un peu de calme dans votre boîte de réception.</h2>
           <p>Inscrivez-vous ici pour recevoir les courriels de People of the Prana. Vous pouvez vous désabonner en tout temps.</p>
         </div>
-        <form class="fsub-form" id="fsub-form" data-endpoint="/wp-json/potp/v1/subscribe" novalidate>
+        <form class="fsub-form" id="fsub-form" data-endpoint="https://slmjdqejtzlwaeupxvbf.supabase.co/functions/v1/crm-intake" data-form="f_mwulv28cdnb7bo" novalidate>
           <label>Prénom<input name="first_name" type="text" autocomplete="given-name"></label>
           <label>Courriel<input name="email" type="email" autocomplete="email" inputmode="email" required></label>
           <label class="fsub-hp" aria-hidden="true">Website<input name="website" type="text" tabindex="-1" autocomplete="off"></label>
@@ -1218,19 +1222,20 @@ body { margin: 0; background: #F6F1E6; }
     </div>
   </footer>
 <script>
-/* V7: the footer sign-up. Sends the first name, email, language and page to the plugin's address (data-endpoint).
+/* V9: the footer sign-up. Sends the first name, email, language and page straight to BreatheCRM (data-endpoint, form data-form).
    Opened from a file or inside the demo, nothing is sent. */
 (function () {
   var f = document.getElementById("fsub-form"); if (!f) return;
+  var T0 = Date.now();   /* BreatheCRM sets aside a form sent within 2 seconds of the page opening (robots) */
   var msg = f.querySelector(".fsub-msg"), name = f.elements.first_name, email = f.elements.email;
   f.addEventListener("submit", function (e) {
     e.preventDefault();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.value.trim())) { msg.textContent = "Veuillez inscrire votre adresse courriel."; email.focus(); return; }
-    var body = { first_name: name.value.trim(), email: email.value.trim(), language: "fr", page: location.pathname, consent: true, at: new Date().toISOString(), website: f.elements.website ? f.elements.website.value : "" };
+    var body = { form: f.getAttribute("data-form"), first_name: name.value.trim(), email: email.value.trim(), language: "fr", page: location.href.split("#")[0], consent: "yes", hp: f.elements.website ? f.elements.website.value : "", t: T0 };
     if (!/^https?:$/.test(location.protocol)) { f.reset(); msg.textContent = "Merci. Votre inscription est faite. (Dans cet aperçu, rien n’a été envoyé.)"; return; }
     msg.textContent = "Un instant.";
     fetch(f.getAttribute("data-endpoint"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), credentials: "omit" })
-      .then(function (r) { if (!r.ok) throw new Error(String(r.status)); f.reset(); msg.textContent = "Merci. Votre inscription est faite."; })
+      .then(function (r) { return r.json(); }).then(function (j) { if (!j || !j.ok) throw new Error((j && j.error) || "error"); f.reset(); msg.textContent = "Merci. Votre inscription est faite."; })
       .catch(function () { msg.textContent = "L’inscription n’a pas fonctionné. Réessayez, ou écrivez à breathe@peopleoftheprana.com."; });
   });
 })();

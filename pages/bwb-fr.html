@@ -5,6 +5,9 @@
 <!--
   PEOPLE OF THE PRANA: Begin with Breath course page (peopleoftheprana.com/begin-with-breath/)
   ------------------------------------------------------------------
+  Version 9 (V9), November 24, 2026: connected straight to BreatheCRM.
+  - The footer sign-up posts straight to BreatheCRM (form "Website newsletter (footer, every page)", f_mwulv28cdnb7bo, tag newsletter) instead of the plugin.
+
   Version 7 (V7), November 17, 2026: Esther's edits of November 16 (one doc per page), on top of the November 12 file.
   - First screen: "breath literacy: the skill school skipped." over "You learned to read. Now learn to breathe."; the new lead (no CE credits); the new "Taught by" line.
   - Esther's story: the new second paragraph, the Shut Up & Breathe paragraph with the second video beside it (Vimeo 1166551289), and the pandemic classes in place of "I created Begin with Breath for this reason."
@@ -1597,14 +1600,15 @@ body { margin: 0; background: #F6F1E6; }
         </div>
         <figcaption class="sig-k" aria-hidden="true"><span><b>22</b>souvent associé à l’anxiété</span><span><b>16</b>la moyenne chez l’adulte</span><span><b>6</b>Respiration calme, sur le rythme</span></figcaption>
       </figure>
-      <!-- V7: the newsletter sign-up, in every footer. It posts to the POTP App Records plugin (1.2), which keeps each subscriber with
-           the time they signed up, the page and the language. CASL: the business name and mailing address sit beside the form. -->
+      <!-- V9: the newsletter sign-up, in every footer. It posts straight to BreatheCRM's form intake (form "Website newsletter (footer,
+           every page)", tag newsletter), which records the consent wording, the time, the page and the language.
+           CASL: the business name and mailing address sit beside the form. -->
       <section class="fsub" aria-labelledby="fsub-h">
         <div class="fsub-copy">
           <h2 class="fsub-h" id="fsub-h">Un peu de calme dans votre boîte de réception.</h2>
           <p>Inscrivez-vous ici pour recevoir les courriels de People of the Prana. Vous pouvez vous désabonner en tout temps.</p>
         </div>
-        <form class="fsub-form" id="fsub-form" data-endpoint="/wp-json/potp/v1/subscribe" novalidate>
+        <form class="fsub-form" id="fsub-form" data-endpoint="https://slmjdqejtzlwaeupxvbf.supabase.co/functions/v1/crm-intake" data-form="f_mwulv28cdnb7bo" novalidate>
           <label>Prénom<input name="first_name" type="text" autocomplete="given-name"></label>
           <label>Courriel<input name="email" type="email" autocomplete="email" inputmode="email" required></label>
           <label class="fsub-hp" aria-hidden="true">Website<input name="website" type="text" tabindex="-1" autocomplete="off"></label>
@@ -1642,19 +1646,20 @@ body { margin: 0; background: #F6F1E6; }
     </div>
   </footer>
 <script>
-/* V7: the footer sign-up. Sends the first name, email, language and page to the plugin's address (data-endpoint).
+/* V9: the footer sign-up. Sends the first name, email, language and page straight to BreatheCRM (data-endpoint, form data-form).
    Opened from a file or inside the demo, nothing is sent. */
 (function () {
   var f = document.getElementById("fsub-form"); if (!f) return;
+  var T0 = Date.now();   /* BreatheCRM sets aside a form sent within 2 seconds of the page opening (robots) */
   var msg = f.querySelector(".fsub-msg"), name = f.elements.first_name, email = f.elements.email;
   f.addEventListener("submit", function (e) {
     e.preventDefault();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.value.trim())) { msg.textContent = "Veuillez inscrire votre adresse courriel."; email.focus(); return; }
-    var body = { first_name: name.value.trim(), email: email.value.trim(), language: "fr", page: location.pathname, consent: true, at: new Date().toISOString(), website: f.elements.website ? f.elements.website.value : "" };
+    var body = { form: f.getAttribute("data-form"), first_name: name.value.trim(), email: email.value.trim(), language: "fr", page: location.href.split("#")[0], consent: "yes", hp: f.elements.website ? f.elements.website.value : "", t: T0 };
     if (!/^https?:$/.test(location.protocol)) { f.reset(); msg.textContent = "Merci. Votre inscription est faite. (Dans cet aperçu, rien n’a été envoyé.)"; return; }
     msg.textContent = "Un instant.";
     fetch(f.getAttribute("data-endpoint"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), credentials: "omit" })
-      .then(function (r) { if (!r.ok) throw new Error(String(r.status)); f.reset(); msg.textContent = "Merci. Votre inscription est faite."; })
+      .then(function (r) { return r.json(); }).then(function (j) { if (!j || !j.ok) throw new Error((j && j.error) || "error"); f.reset(); msg.textContent = "Merci. Votre inscription est faite."; })
       .catch(function () { msg.textContent = "L’inscription n’a pas fonctionné. Réessayez, ou écrivez à breathe@peopleoftheprana.com."; });
   });
 })();
