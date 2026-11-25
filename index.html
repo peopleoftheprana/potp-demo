@@ -14,7 +14,7 @@
     For organizations (/corporate/ and /fr/organisations/). The homepage runs app version 10. On the live site the pages' forms
     post to BreatheCRM; on this test copy nothing is sent.
   This page opens each one from pages/<page>-<lang>.html and the app's tracks play from audio/.
-  The bar: the logo, the pages, the address, and the site's Menu button in the corner (it opens the menu of the page on show;
+  The bar: the logo, the pages and the site's Menu button in the corner (it opens the menu of the page on show;
   the page's own button is hidden here). Each page's menu has its language link, which keeps your place on the page.
   Links to pages that aren't on the test copy open the live page in a new tab. The bar stores nothing in the browser.
   Each page is the real page file, untouched, opened inside this frame. Links between the six
@@ -62,10 +62,6 @@ button, select { font: inherit; color: inherit; }
 .tabs button[aria-current="page"] i path { animation: draw 1.2s cubic-bezier(.45, 0, .55, 1) forwards; }
 @keyframes draw { to { stroke-dashoffset: 0; } }
 
-.addr { flex: 1; min-width: 0; display: flex; justify-content: center; }
-.addr span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 7px 14px; border: 1px solid var(--rule);
-  border-radius: 14px 3px; color: rgba(246, 241, 230, .7); font: 400 13px/1 var(--body); letter-spacing: .01em; }
-.addr b { color: var(--soft); font-weight: 600; }
 
 .tools { display: flex; align-items: center; gap: 10px; flex: none; margin-left: auto; }
 .page-sel { display: none; }
@@ -102,7 +98,6 @@ button, select { font: inherit; color: inherit; }
 .toast a[hidden] { display: none; }
 .toast button { flex: none; width: 34px; height: 34px; border: 0; background: none; cursor: pointer; font-size: 20px; line-height: 1; color: rgba(246, 241, 230, .7); }
 
-@media (max-width: 1360px) { .addr { display: none; } .tools { margin-left: auto; } }
 @media (max-width: 1240px) {
   .tabs { display: none; }
   .page-sel { display: block; min-width: 0; flex: 1; max-width: 260px; height: 40px; padding: 0 30px 0 12px; border: 1px solid var(--rule); border-radius: 15px 3px;
@@ -117,8 +112,6 @@ button, select { font: inherit; color: inherit; }
   .brand img { display: none; }
   .tools { gap: 6px; }
 }
-@media (max-width: 1240px) and (min-width: 761px) { .addr { display: flex; } }
-@media (max-width: 760px) { .addr { display: none; } }
 @media (max-width: 560px) { .brand { display: none; } .menu-x { min-width: 76px; padding: 0 14px; font-size: 15px; } }
 @media (prefers-reduced-motion: reduce) {
   .menu-x { transition: none; }
@@ -146,7 +139,6 @@ button, select { font: inherit; color: inherit; }
   <select class="page-sel" id="page-sel" aria-label="Page">
     <option value="home"></option><option value="bb"></option><option value="bwb"></option><option value="nk"></option><option value="wub"></option><option value="ab"></option><option value="corp"></option>
   </select>
-  <div class="addr" aria-hidden="true"><span id="addr"></span></div>
   <div class="tools">
     <button type="button" class="menu-x" id="menu-x" aria-expanded="false" hidden><span id="menu-lbl">Menu</span></button>
   </div>
@@ -396,7 +388,6 @@ button, select { font: inherit; color: inherit; }
     var sel = $("page-sel");
     Array.prototype.forEach.call(sel.options, function (o) { o.textContent = T.tabs[o.value]; });
     sel.value = state.page; sel.setAttribute("aria-label", T.page);
-    $("addr").innerHTML = "peopleoftheprana.com<b>" + PATH[state.lang][state.page] + "</b>";
     $("loader-p").textContent = T.loading;
     $("brand").setAttribute("href", "#/" + state.lang + "/home"); $("brand").setAttribute("aria-label", T.brand);
     $("toast-x").setAttribute("aria-label", T.close);
